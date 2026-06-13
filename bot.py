@@ -8,6 +8,9 @@ from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message
 from config import TOKEN
+from commands import *
+from data import get_all_films
+from keyboards import create_menu_keyboard
 
 
 # Bot token can be obtained via https://t.me/BotFather
@@ -16,16 +19,27 @@ from config import TOKEN
 # All handlers should be attached to the Router (or Dispatcher)
 dp = Dispatcher()
 
-@dp.message(Command("help"))  
+@dp.message(COMMAND_START)
+async def command_start_handler(message: Message) -> None:
+    await message.answer(f"Hello, {html.bold(message.from_user.full_name)}!", 
+                         reply_markup=create_menu_keyboard())
+
+@dp.message(COMMAND_HELP)  
 async def command_help(message):
 #list all available commands
     await message.answer("/help - list all available commands\n/about - information about this bot")
 
-@dp.message(Command("about"))  
+@dp.message(COMMAND_ABOUT)  
 async def command_about(message):
     await message.answer("This bot is created using aiogram library. It is a simple echo bot that responds to /help and /about commands.")
+    # number = int(message.text.split()[1])  
 
-@dp.message(Command("multiply"))
+@dp.message(COMMAND_FILMS)
+async def command_films(message):
+    await message.answer(f"List of films:\n" + str(get_all_films()))
+
+
+@dp.message(COMMAND_MULTIPLY)
 async def command_multiply(message):
     # Extract numbers from the message text
     numbers = [int(num) for num in message.text.split()[1:]]
@@ -66,7 +80,7 @@ async def command_multiply(message):
 async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
-
+    await bot.set_my_commands([com for com in bot_commands])
     # And the run events dispatching
     await dp.start_polling(bot)
 
