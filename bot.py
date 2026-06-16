@@ -51,6 +51,15 @@ async def command_multiply(message):
         result *= num
     await message.answer(f"The result of multiplying {', '.join(map(str, numbers))} is {result}")
 
+@dp.message()
+async def all_text(message):
+    if message.text == "start":
+        await message.answer("This is command START")
+    elif message.text == "help":
+        await message.answer("This is command HELP")
+    elif message.text == "settings":
+        await message.answer("This is command SETTINGS")
+
 # @dp.message(CommandStart())
 # async def command_start_handler(message: Message) -> None:
 #     """
