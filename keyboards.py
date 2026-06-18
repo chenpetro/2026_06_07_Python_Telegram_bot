@@ -15,6 +15,9 @@ def create_menu_keyboard():
         builder.add(KeyboardButton(text=f"{com}"))
     return builder.as_markup()
 
-def create_menu_keyboard():
+def create_inline_keyboard():
     builder = InlineKeyboardBuilder()
+    button = "Send secret"
+    builder.button(text=button, callback_data="secret_button")
+    
     return builder.as_markup()

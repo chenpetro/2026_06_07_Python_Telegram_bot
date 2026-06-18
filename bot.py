@@ -2,7 +2,7 @@ import asyncio
 import logging
 import sys
 from os import getenv
-from aiogram import Bot, Dispatcher, html
+from aiogram import Bot, Dispatcher, html, F 
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandStart
@@ -10,7 +10,7 @@ from aiogram.types import Message
 from config import TOKEN
 from commands import *
 from data import get_all_films
-from keyboards import create_menu_keyboard
+from keyboards import create_menu_keyboard, create_inline_keyboard
 
 
 # Bot token can be obtained via https://t.me/BotFather
@@ -51,12 +51,17 @@ async def command_multiply(message):
         result *= num
     await message.answer(f"The result of multiplying {', '.join(map(str, numbers))} is {result}")
 
+@dp.message(F.text == "Start")
+async def handle_f_message(message):
+    await message.answer("Start is operated by F.text")
+
+
 @dp.message()
 async def all_text(message):
     if message.text == "start":
         await message.answer("This is command START")
     elif message.text == "help":
-        await message.answer("This is command HELP")
+        await message.answer("This is command HELP", reply_markup=create_inline_keyboard())
     elif message.text == "settings":
         await message.answer("This is command SETTINGS")
 
@@ -85,6 +90,12 @@ async def all_text(message):
 #     except TypeError:
 #         # But not all the types is supported to be copied so need to handle it
 #         await message.answer("Nice try!")
+
+@dp.callback_query(F.data == "secret_button")
+async def handle_call(callback):
+    await callback.answer()
+    await callback.message.answer(f"You have pressed the secret button! with calldata {callback.data}")
+
 
 async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls
