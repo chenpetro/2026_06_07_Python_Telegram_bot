@@ -10,7 +10,7 @@ from commands import commands
 
 def create_menu_keyboard():
     builder = ReplyKeyboardBuilder()
-    commands = ["start", "help", "settings"]  # Example commands
+    commands = ["start", "help", "settings", "add film"]  # Example commands
     for com in commands:
         builder.add(KeyboardButton(text=f"{com}"))
     return builder.as_markup()

@@ -1,7 +1,8 @@
 import asyncio
+from email.mime import message
 import logging
 import sys
-from os import getenv
+from os import getenv, name
 from aiogram import Bot, Dispatcher, html, F 
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -9,8 +10,11 @@ from aiogram.filters import Command, CommandStart
 from aiogram.types import Message
 from config import TOKEN
 from commands import *
-from data import get_all_films
+from data import add_film, get_all_films
+import data
 from keyboards import create_menu_keyboard, create_inline_keyboard
+from models import Film
+from states import FilmStates
 
 
 # Bot token can be obtained via https://t.me/BotFather
@@ -23,6 +27,47 @@ dp = Dispatcher()
 async def command_start_handler(message: Message) -> None:
     await message.answer(f"Hello, {html.bold(message.from_user.full_name)}!", 
                          reply_markup=create_menu_keyboard())
+
+@dp.message(COMMAND_ADD_FILM)
+async def handle_add_film(message): #add_film Titanic, Ship down, 9.9
+    film_info = message.text[9:] #Titanic, Ship down, 9.9
+    info= film_info.split(",") #["Titanic", " Ship down", " 9.9"]
+    if len(info) != 3:
+        await message.answer("Please provide film information in the format: /add_film name, description, rating")
+        return
+    name = info[0] #Titanic
+    description = info[1]
+    rating = info[2] #Ship down
+    await message.answer(f"name: {name}\ndescription: {description}\nrating: {rating}")    
+    model = Film(name=name, description=description, rating=rating)
+    add_film(model)
+
+@dp.message(F.text == "add film")
+async def first_state(message, state):
+    await state.set_state(FilmStates.name_state)
+    await message.answer("Please enter the film name:")
+
+@dp.message(FilmStates.name_state)
+async def second_state(message, state):
+        await state.update_data(name=message.text)
+        await state.set_state(FilmStates.desc_state)
+        await message.answer("Please enter the film description:")
+
+@dp.message(FilmStates.desc_state)
+async def second_state(message, state):
+        await state.update_data(description=message.text)
+        data = await state.get_data()
+        model = Film(**data)
+        add_film(model)
+        await state.set_state(FilmStates.rate_state)
+        await message.answer("Please enter the film rating:")
+
+@dp.message(FilmStates.rate_state)
+async def second_state(message, state):
+        await state.update_data(rating=message.text)
+        await state.clear()
+        await message.answer("Film successfully added!")
+
 
 @dp.message(COMMAND_HELP)  
 async def command_help(message):
@@ -37,7 +82,6 @@ async def command_about(message):
 @dp.message(COMMAND_FILMS)
 async def command_films(message):
     await message.answer(f"List of films:\n" + str(get_all_films()))
-
 
 @dp.message(COMMAND_MULTIPLY)
 async def command_multiply(message):
