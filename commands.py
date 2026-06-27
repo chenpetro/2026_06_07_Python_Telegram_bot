@@ -1,3 +1,8 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 from aiogram.filters import Command, CommandStart
 from aiogram.types.bot_command import BotCommand
 

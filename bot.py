@@ -1,3 +1,16 @@
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler("bot_logger.log", mode='w', encoding='utf-8'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+
 import asyncio
 from email.mime import message
 import logging
@@ -15,7 +28,7 @@ import data
 from keyboards import create_menu_keyboard, create_inline_keyboard
 from models import Film
 from states import FilmStates
-
+from decor import async_log_function_call
 
 # Bot token can be obtained via https://t.me/BotFather
 
@@ -24,11 +37,13 @@ from states import FilmStates
 dp = Dispatcher()
 
 @dp.message(COMMAND_START)
+@async_log_function_call
 async def command_start_handler(message: Message) -> None:
     await message.answer(f"Hello, {html.bold(message.from_user.full_name)}!", 
                          reply_markup=create_menu_keyboard())
 
 @dp.message(COMMAND_ADD_FILM)
+@async_log_function_call
 async def handle_add_film(message): #add_film Titanic, Ship down, 9.9
     film_info = message.text[9:] #Titanic, Ship down, 9.9
     info= film_info.split(",") #["Titanic", " Ship down", " 9.9"]
@@ -41,19 +56,21 @@ async def handle_add_film(message): #add_film Titanic, Ship down, 9.9
     await message.answer(f"name: {name}\ndescription: {description}\nrating: {rating}")    
     model = Film(name=name, description=description, rating=rating)
     add_film(model)
-
 @dp.message(F.text == "add film")
+@async_log_function_call
 async def first_state(message, state):
     await state.set_state(FilmStates.name_state)
     await message.answer("Please enter the film name:")
 
 @dp.message(FilmStates.name_state)
+@async_log_function_call
 async def second_state(message, state):
         await state.update_data(name=message.text)
         await state.set_state(FilmStates.desc_state)
         await message.answer("Please enter the film description:")
 
 @dp.message(FilmStates.desc_state)
+@async_log_function_call
 async def second_state(message, state):
         await state.update_data(description=message.text)
         data = await state.get_data()
@@ -63,6 +80,7 @@ async def second_state(message, state):
         await message.answer("Please enter the film rating:")
 
 @dp.message(FilmStates.rate_state)
+@async_log_function_call
 async def second_state(message, state):
         await state.update_data(rating=message.text)
         await state.clear()
@@ -70,37 +88,49 @@ async def second_state(message, state):
 
 
 @dp.message(COMMAND_HELP)  
+@async_log_function_call
 async def command_help(message):
 #list all available commands
     await message.answer("/help - list all available commands\n/about - information about this bot")
 
 @dp.message(COMMAND_ABOUT)  
+@async_log_function_call
 async def command_about(message):
     await message.answer("This bot is created using aiogram library. It is a simple echo bot that responds to /help and /about commands.")
     # number = int(message.text.split()[1])  
 
 @dp.message(COMMAND_FILMS)
+@async_log_function_call
 async def command_films(message):
     await message.answer(f"List of films:\n" + str(get_all_films()))
 
 @dp.message(COMMAND_MULTIPLY)
+@async_log_function_call
 async def command_multiply(message):
-    # Extract numbers from the message text
-    numbers = [int(num) for num in message.text.split()[1:]]
-    if len(numbers) < 2:
-        await message.answer("Please provide at least two numbers to multiply. Usage: /multiply 2 3")
+    parts = (message.text or "").split()[1:]
+    if len(parts) < 2:
+        await message.answer("Please provide at least two numbers. Usage: /multiply 2 3")
         return
+
+    try:
+        numbers = [int(num) for num in parts]
+    except ValueError:
+        await message.answer("Please use only integers. Example: /multiply 2 3")
+        return
+
     result = 1
     for num in numbers:
         result *= num
     await message.answer(f"The result of multiplying {', '.join(map(str, numbers))} is {result}")
 
 @dp.message(F.text == "Start")
+@async_log_function_call
 async def handle_f_message(message):
     await message.answer("Start is operated by F.text")
 
 
 @dp.message()
+@async_log_function_call
 async def all_text(message):
     if message.text == "start":
         await message.answer("This is command START")
@@ -136,14 +166,18 @@ async def all_text(message):
 #         await message.answer("Nice try!")
 
 @dp.callback_query(F.data == "secret_button")
+@async_log_function_call
 async def handle_call(callback):
     await callback.answer()
     await callback.message.answer(f"You have pressed the secret button! with calldata {callback.data}")
 
 
 async def main() -> None:
+    logger.info("Bot is starting...")
     # Initialize Bot instance with default bot properties which will be passed to all API calls
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    # Polling cannot work while webhook is active for this token.
+    await bot.delete_webhook(drop_pending_updates=True)
     await bot.set_my_commands([com for com in bot_commands])
     # And the run events dispatching
     await dp.start_polling(bot)

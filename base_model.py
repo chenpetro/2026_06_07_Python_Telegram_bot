@@ -1,3 +1,8 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 import json
 
 def get_film_info(file_path="films.json"):
