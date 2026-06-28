@@ -56,6 +56,7 @@ async def handle_add_film(message): #add_film Titanic, Ship down, 9.9
     await message.answer(f"name: {name}\ndescription: {description}\nrating: {rating}")    
     model = Film(name=name, description=description, rating=rating)
     add_film(model)
+
 @dp.message(F.text == "add film")
 @async_log_function_call
 async def first_state(message, state):
@@ -73,16 +74,16 @@ async def second_state(message, state):
 @async_log_function_call
 async def second_state(message, state):
         await state.update_data(description=message.text)
-        data = await state.get_data()
-        model = Film(**data)
-        add_film(model)
         await state.set_state(FilmStates.rate_state)
-        await message.answer("Please enter the film rating:")
+        await message.answer("Please enter the film rating:") 
 
 @dp.message(FilmStates.rate_state)
 @async_log_function_call
 async def second_state(message, state):
         await state.update_data(rating=message.text)
+        data = await state.get_data()
+        model = Film(**data)
+        add_film(model)
         await state.clear()
         await message.answer("Film successfully added!")
 
