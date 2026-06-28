@@ -1,0 +1,13 @@
+2026-06-27 23:48:29,955 - bot.py - INFO - Bot is starting...
+2026-06-27 23:48:30,303 - dispatcher.py - INFO - Start polling
+2026-06-27 23:48:30,336 - dispatcher.py - INFO - Run polling for bot @petros234_bot id=8728056325 - 'WorldOfBot1'
+2026-06-27 23:58:03,321 - bot.py - INFO - User 6585145771 sent a message: start
+2026-06-27 23:58:03,488 - dispatcher.py - INFO - Update id=326553834 is handled. Duration 170 ms by bot id=8728056325
+2026-06-27 23:58:05,527 - bot.py - INFO - User 6585145771 sent a message: help
+2026-06-27 23:58:05,581 - dispatcher.py - INFO - Update id=326553835 is handled. Duration 54 ms by bot id=8728056325
+2026-06-27 23:58:07,174 - bot.py - INFO - User 6585145771 pressed the secret button with calldata: secret_button
+2026-06-27 23:58:07,266 - dispatcher.py - INFO - Update id=326553836 is handled. Duration 92 ms by bot id=8728056325
+2026-06-27 23:58:18,714 - bot.py - INFO - User 6585145771 requested multiplication.
+2026-06-27 23:58:18,778 - dispatcher.py - INFO - Update id=326553837 is handled. Duration 64 ms by bot id=8728056325
+2026-06-27 23:58:36,377 - bot.py - INFO - User 6585145771 requested multiplication.
+2026-06-27 23:58:36,435 - dispatcher.py - INFO - Update id=326553838 is handled. Duration 60 ms by bot id=8728056325
